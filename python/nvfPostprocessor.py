@@ -64,6 +64,7 @@ class stand_alone_window(QMainWindow):
         self.octoprint_url_field.setMaximumWidth(MAX_WIDTH)
         self.octoprint_url_button = QPushButton("Save octoprint url")
         self.load_current_spool_button = QPushButton("load current spools")
+        self.num_of_extruders_label = QLabel("Number of extruders: ")
         self.octoprint_error = QLabel("")
         self.octoprint_error.setWordWrap(True)
         self.octoprint_error.setMaximumWidth(MAX_WIDTH)
@@ -102,6 +103,10 @@ class stand_alone_window(QMainWindow):
         self.layout.addWidget(self.octoprint_url_button)
         self.layout.addWidget(self.load_current_spool_button)
         self.layout.addWidget(self.octoprint_error)
+
+        if MODE == modes.POST_PROCESSOR:
+            self.num_of_extruders_label.setText(f"Number of extruders: {get_num_extruders_from_gcode(sys.argv[1])}")
+            self.layout.addWidget(self.num_of_extruders_label)
         self.layout.addLayout(self.data_box)
 
         self.update_display_data(self.json_data)
@@ -381,6 +386,29 @@ def get_loaded_spools(url: str) -> list[str] | None:
     spool_data = [spool["displayName"] for spool in json_data]
     # the app
     return spool_data
+
+def get_num_extruders_from_gcode(gcode_path) -> int:
+    """
+    Get the number of extruders from the gcode file
+    :param gcode_path: the path to the gcode file
+    :return: the number of extruders
+    """
+    count = 0
+    postprocessor.parse_gcode(gcode_path)
+    filament_notes_pattern = re.compile(r'; filament_notes = (.+)')
+    filament_notes_match = filament_notes_pattern.search(gcode)
+    filament_notes = None
+    if filament_notes_match:
+        filament_notes = filament_notes_match.group(1).strip().split(';')
+    if filament_notes is None:
+        return gcode
+
+    # loop through the json data
+    for i in range(len(filament_notes)):
+        if re.search(r"\[\s*sm_name\s*=\s*([^]]*\S)]", filament_notes[i]):
+            count += 1
+    return count
+
 
 
 if __name__ == "__main__":

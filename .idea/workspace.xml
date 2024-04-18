@@ -5,8 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1c7ba4a2-eb6c-4fc4-b1a8-6c6b48c0fe04" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/python/build_macos.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/python/build_windows.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/FIlament-Nozzle-Post-Processor.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/FIlament-Nozzle-Post-Processor.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/nvfPostprocessor" beforeDir="false" afterPath="$PROJECT_DIR$/macos/nvfPostprocessor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/python/nvfPostprocessor.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/nvfPostprocessor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/python/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/python/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,6 +34,7 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "dev",
+    "last_opened_file_path": "/Users/rylan/Documents/GitKraken/FIlament-Nozzle-Post-Processor",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -38,6 +44,9 @@
   }
 }]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/python" />
     </key>
@@ -180,7 +189,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1713406331336</updated>
-      <workItem from="1713406333328" duration="891000" />
+      <workItem from="1713406333328" duration="5988000" />
     </task>
     <servers />
   </component>
