@@ -64,7 +64,7 @@ class stand_alone_window(QMainWindow):
         self.octoprint_url_field.setMaximumWidth(MAX_WIDTH)
         self.octoprint_url_button = QPushButton("Save octoprint url")
         self.load_current_spool_button = QPushButton("load current spools")
-        self.num_of_extruders_label = QLabel("Number of extruders: ")
+        self.num_of_extruders_label = QLabel("Number of extruders in gcode: ")
         self.octoprint_error = QLabel("")
         self.octoprint_error.setWordWrap(True)
         self.octoprint_error.setMaximumWidth(MAX_WIDTH)
@@ -105,7 +105,8 @@ class stand_alone_window(QMainWindow):
         self.layout.addWidget(self.octoprint_error)
 
         if MODE == modes.POST_PROCESSOR:
-            self.num_of_extruders_label.setText(f"Number of extruders: {get_num_extruders_from_gcode(sys.argv[1])}")
+            self.num_of_extruders_label.setText(f"Number of extruders in gcode:"
+                                                f" {get_num_extruders_from_gcode(sys.argv[1])}")
             self.layout.addWidget(self.num_of_extruders_label)
         self.layout.addLayout(self.data_box)
 
