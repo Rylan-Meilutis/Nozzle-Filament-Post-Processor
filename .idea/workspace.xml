@@ -5,8 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1c7ba4a2-eb6c-4fc4-b1a8-6c6b48c0fe04" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/windows/create_shortcut.vbs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/python/nvfPostprocessor.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/nvfPostprocessor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/nvfPostprocessor" beforeDir="false" afterPath="$PROJECT_DIR$/macos/nvfPostprocessor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/setup_postprocessor-macos.sh" beforeDir="false" afterPath="$PROJECT_DIR$/macos/setup_postprocessor-macos.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/python/build_macos.sh" beforeDir="false" afterPath="$PROJECT_DIR$/python/build_macos.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/setup-postprocessor-exe.bat" beforeDir="false" afterPath="$PROJECT_DIR$/windows/setup-postprocessor-exe.bat" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,20 +29,21 @@
     <option name="showLibraryContents" value="true" />
     <option name="showMembers" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.nvfPostprocessor.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/rylan/Documents/GitKraken/FIlament-Nozzle-Post-Processor&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.nvfPostprocessor.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "Shell Script.build_macos.sh.executor": "Run",
+    "git-widget-placeholder": "dev",
+    "last_opened_file_path": "/Users/rylan/Documents/GitKraken/FIlament-Nozzle-Post-Processor",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -185,7 +190,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1713406331336</updated>
-      <workItem from="1713406333328" duration="10054000" />
+      <workItem from="1713406333328" duration="12092000" />
     </task>
     <servers />
   </component>

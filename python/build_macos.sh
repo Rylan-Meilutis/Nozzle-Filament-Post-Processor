@@ -8,11 +8,11 @@ python -m pip install --upgrade -r requirements.txt
 venv/bin/pyinstaller --noconfirm --onefile --noconsole --name "nvfPostprocessor" "nvfPostprocessor.py" -i="icon.png" --add-data "icon.png:."
 
 rm -rf build
-rm -rf dist/nvfPostprocessor.app
+rm -rf dist/nvfPostprocessor.app/Contents/MacOS/nvfPostprocessor
 
 mkdir -p ../macos
 mv dist/nvfPostprocessor ../macos
-
+mv dist/nvfPostprocessor.app ../macos
 rm -rf dist
 
 rm nvfPostprocessor.spec

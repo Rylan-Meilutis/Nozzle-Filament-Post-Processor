@@ -1,6 +1,8 @@
 @echo off
-echo. > data.json
-echo. > nfvsettings.json.json
+IF NOT EXIST data.json echo. > data.json
+IF NOT EXIST nfvsettings.json echo. > nfvsettings.json
+
+cscript //nologo create_shortcut.vbs "nvfPostprocessor.exe"
 echo Postprocessor setup complete.
 echo.
 echo Enter the following in your slicers post processor section:
