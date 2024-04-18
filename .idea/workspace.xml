@@ -5,13 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1c7ba4a2-eb6c-4fc4-b1a8-6c6b48c0fe04" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/python/build_macos.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/python/build_windows.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/FIlament-Nozzle-Post-Processor.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/FIlament-Nozzle-Post-Processor.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/macos/nvfPostprocessor" beforeDir="false" afterPath="$PROJECT_DIR$/macos/nvfPostprocessor" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/python/nvfPostprocessor.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/nvfPostprocessor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/python/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/python/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/python/postprocessor.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/postprocessor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,6 +29,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.nvfPostprocessor.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "dev",
     "last_opened_file_path": "/Users/rylan/Documents/GitKraken/FIlament-Nozzle-Post-Processor",
@@ -189,11 +187,14 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1713406331336</updated>
-      <workItem from="1713406333328" duration="5988000" />
+      <workItem from="1713406333328" duration="8754000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/FIlament_Nozzle_Post_Processor$nvfPostprocessor.coverage" NAME="nvfPostprocessor Coverage Results" MODIFIED="1713453909996" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/python" />
   </component>
 </project>

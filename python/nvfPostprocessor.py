@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import time
 from threading import Thread
@@ -45,7 +46,6 @@ class stand_alone_window(QMainWindow):
         except KeyError:
             self.json_path = None
         self.json_data = load_json_data(self.json_path)
-        self.first_click = True
 
         self.pick_path_button = QPushButton("Select data file")
         self.save_button = QPushButton("Save data")
@@ -76,7 +76,7 @@ class stand_alone_window(QMainWindow):
 
         self.save_button.clicked.connect(self.save_button_click)
         self.pick_path_button.clicked.connect(self.pick_file_button_click)
-        self.file_dialog.fileSelected.connect(self.handle_file_selected)
+        # self.file_dialog.fileSelected.connect(self.handle_file_selected)
         self.load_current_spool_button.clicked.connect(self.load_current_spools)
 
         self.layout = QVBoxLayout()
@@ -118,7 +118,17 @@ class stand_alone_window(QMainWindow):
         self.setCentralWidget(container)
 
     def continue_print_click(self):
-        save_data_file(self.json_path, self.json_data)
+        if self.json_path is None:
+            self.octoprint_error.setText("No file selected")
+            return
+        if self.json_data is None:
+            self.octoprint_error.setText("No data to save")
+            return
+        if not save_data_file(self.json_path, self.json_data):
+            self.octoprint_error.setText(
+                "Could not save the data")
+            return
+        self.octoprint_error.setText("")
         save_settings(self.settings)
         postprocessor.main(sys.argv[1], json_data=postprocessor.parse_json_data(self.json_data))
         self.close()
@@ -220,6 +230,12 @@ class stand_alone_window(QMainWindow):
 
     def save_button_click(self):
         self.read_current_spools()
+        if self.get_json_path() is None:
+            self.save_button.setText("No file selected")
+            return
+        if self.json_data is None:
+            self.save_button.setText("No data to save")
+            return
         if not save_data_file(self.get_json_path(), self.json_data):
             self.save_button.setText("Could not save the data, invalid file (is the file the settings file?)\nPick a "
                                      "different file and try again")
@@ -234,11 +250,14 @@ class stand_alone_window(QMainWindow):
         self.save_button.setText("Save Data")
 
     def pick_file_button_click(self):
-        if self.first_click:
-            self.layout.addWidget(self.file_dialog)
-            self.first_click = False
-        else:
-            self.file_dialog.open()
+        file_name, _ = QFileDialog.getSaveFileName(self, "Select the data json file", "", "JSON Files (*.json)")
+
+        if file_name:
+            _, ext = os.path.splitext(file_name)
+            # If not, add .json
+            if not ext:
+                file_name += '.json'
+            self.handle_file_selected(file_name)
 
     def handle_file_selected(self, path):
         self.json_path = path
@@ -281,6 +300,10 @@ def main() -> None:
 def load_json_data(path):
     if path is None:
         return {}
+    if os.path.isdir(path):
+        return {}
+    if not os.path.exists(path):
+        return {}
     with open(path, 'r') as file:
         try:
             data = json.load(file)
@@ -303,6 +326,13 @@ def save_data_file(path: str, data: dict[str, None]) -> bool:
     :param data: the data to save
     :return: true if the data was saved, false otherwise
     """
+
+    if path is None:
+        return False
+    elif os.path.isdir(path):
+        return False
+    if data is None:
+        return False
     try:
         with open(path, 'r') as file:
             current_data = json.load(file)
@@ -387,6 +417,7 @@ def get_loaded_spools(url: str) -> list[str] | None:
     # the app
     return spool_data
 
+
 def get_num_extruders_from_gcode(gcode_path) -> int:
     """
     Get the number of extruders from the gcode file
@@ -394,21 +425,20 @@ def get_num_extruders_from_gcode(gcode_path) -> int:
     :return: the number of extruders
     """
     count = 0
-    postprocessor.parse_gcode(gcode_path)
+    gcode = postprocessor.parse_gcode(gcode_path)
     filament_notes_pattern = re.compile(r'; filament_notes = (.+)')
     filament_notes_match = filament_notes_pattern.search(gcode)
     filament_notes = None
     if filament_notes_match:
         filament_notes = filament_notes_match.group(1).strip().split(';')
     if filament_notes is None:
-        return gcode
+        return 0
 
     # loop through the json data
     for i in range(len(filament_notes)):
-        if re.search(r"\[\s*sm_name\s*=\s*([^]]*\S)]", filament_notes[i]):
+        if re.search(r"\[\s*sm_name\s*=\s*([^]]*\S)?\s*]", filament_notes[i]):
             count += 1
     return count
-
 
 
 if __name__ == "__main__":
