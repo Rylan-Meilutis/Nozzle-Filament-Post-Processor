@@ -124,3 +124,7 @@ dmypy.json
 .pyre/
 
 .DS_Store
+
+macos/nvfsettings.json
+
+macos/settings.json

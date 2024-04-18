@@ -2,4 +2,3 @@ requests
 pyqt6
 pillow
 pyinstaller
-setuptools
