@@ -1,0 +1,11 @@
+../venv/bin/pyinstaller --noconfirm --onefile --noconsole --name "nvfPostprocessor" "python/nvfPostprocessor.py" -i="icon.png" --add-data "icon.png:."
+
+or
+
+pyinstaller --noconfirm --onefile --noconsole --name "nvfPostprocessor" "python/nvfPostprocessor.py" -i="icon.png" --add-data "icon.png:."
+
+rm -r build
+
+mv dist/* .
+
+rm -r dist
