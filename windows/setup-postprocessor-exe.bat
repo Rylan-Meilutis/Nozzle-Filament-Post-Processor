@@ -1,6 +1,6 @@
 @echo off
 echo. > data.json
-
+echo. > nfvsettings.json.json
 echo Postprocessor setup complete.
 echo.
 echo Enter the following in your slicers post processor section:

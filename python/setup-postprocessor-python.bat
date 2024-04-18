@@ -9,18 +9,17 @@ if %errorlevel% neq 0 (
 )
 if "%python_installed%"=="true" (
     echo Python is installed and on the PATH.
+    python -m pip install --upgrade -r requirements.txt
     )
-REM Make the python script executable
-attrib +r postprocessor.py
 
 echo. > data.json
+nfvsettings.json
 
 echo Postprocessor setup complete.
 echo.
 echo Enter the following in your slicers post processor section:
 echo.
 if "%python_installed%"=="true" (
-    python -m pip install --upgrade -r requirements.txt
     for /f "delims=" %%i in ('where python') do set "PYTHON_PATH=%%i"
     echo %PYTHON_PATH% %cd%\nvfPostprocessor.py
 ) else (
