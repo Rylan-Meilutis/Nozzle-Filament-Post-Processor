@@ -16,11 +16,10 @@ venv\Scripts\pyinstaller --noconfirm --onefile --noconsole --name "nvfPostproces
 
 REM Clean up
 rmdir /s /q build
-rmdir /s /q dist\nvfPostprocessor.app
 
 REM Move the built application
 if not exist ..\windows mkdir ..\windows
-move dist\nvfPostprocessor ..\windows
+move dist\nvfPostprocessor.exe ..\windows
 
 REM More clean up
 rmdir /s /q dist
