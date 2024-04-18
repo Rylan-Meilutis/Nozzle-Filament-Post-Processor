@@ -14,8 +14,8 @@ Unzip the folder and double click the <code>setup-postprocessor-exe.bat</code> f
 
 Copy the output and paste it into the post processor part of the slicer settings (found under print settings/output options in Prusa slicer).
 
-From now on, use either the provided nvfPostprocessor.exe or the python script to edit the spool settings
-(editing the spool names to include in the gcode).
+From now on, use the output command to  edit the spool settings(editing the spool names to include in the gcode).
+(coming soon for windows: automatic start menu support)
 
 When exporting the gcode, a window will pop up asking you to confirm the current settings. 
 If you are happy with the settings, click ok, otherwise edit the spools until they are correct.
@@ -31,17 +31,17 @@ Unzip the folder and navigate to the folder in the terminal
 - For mac, open the folder one level below the folder and right-click the folder and select new terminal at folder.
 - Alternatively, open the terminal and use cd to get to the directory 
 
-Then run the Following command: <code>sh setup_postprocessor.sh</code>.
+Then run the Following command: <code>sh setup_postprocessor-macos.sh</code> For macOS.
+if you are using python, run <code>sh setup_postprocessor-python.sh</code> instead.
 
 Copy the output and paste it into the post-processor part of the slicer settings
 (found under print settings/output options in Prusa slicer).
 
 For Mac users, we are all done with the terminal now.
 
-From now on,
-use either the provided spoolEditor application bundle (macOS)
-or the python script (either OS) to edit the spool settings
-(editing the spool names to include in the gcode).
+From now on, use the output command to  edit the spool settings (editing the spool names to include in the gcode).
+(Coming soon for macOS: automatic launchpad support)
+(If using linux, I will assume you know how to make a desktop shortcut or add it to the application menu)
 
 (there is no executable for linux since there are so many different distros and desktop environments, but the python script should work just fine)
 
