@@ -125,6 +125,8 @@ dmypy.json
 
 .DS_Store
 
-macos/nvfsettings.json
+nvfsettings.json
 
-macos/settings.json
+settings.json
+
+data.json
