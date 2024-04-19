@@ -9,6 +9,7 @@ venv/bin/pyinstaller --noconfirm --onefile --noconsole --name "nvfPostprocessor"
 
 rm -rf build
 rm -rf dist/nvfPostprocessor.app/Contents/MacOS/nvfPostprocessor
+rm -rf ../macos/nvfPostprocessor.app/
 
 mkdir -p ../macos
 mv dist/nvfPostprocessor ../macos
