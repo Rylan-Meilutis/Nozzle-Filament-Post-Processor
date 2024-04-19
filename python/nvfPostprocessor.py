@@ -163,7 +163,10 @@ class stand_alone_window(QMainWindow):
         if spools is None:
             self.octoprint_error.setText("Could not load the spools")
             return
-        self.json_data = {str(i + 1): {"sm_name": spool} for i, spool in enumerate(spools)}
+        # if the spool is none add an empty string to the json_data
+        for i, spool in enumerate(spools):
+            self.json_data[str(i + 1)] = {"sm_name": spool}
+
         self.update_display_data(self.json_data)
 
     def save_octoprint_url(self) -> None:
@@ -488,11 +491,21 @@ def get_loaded_spools(url: str) -> list[str] | None:
         return None
     except json.JSONDecodeError:
         return None
+    except TypeError:
+        return None
     # remove all except loaded spools
     json_data = json_data["selectedSpools"]
     # create a list where each element is the name of a spool, the spools are in order of the extruders in the json
     # response
-    spool_data = [spool["displayName"] for spool in json_data]
+    spool_data = []
+
+    for spool in json_data:
+        try:
+            spool_data += [spool["displayName"]]
+        except KeyError:
+            spool_data += [""]
+        except TypeError:
+            spool_data += [""]
     # the app
     return spool_data
 
