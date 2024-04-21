@@ -44,22 +44,19 @@ class stand_alone_window(QMainWindow):
         self.setWindowTitle("Nozzle Filament Validator Post-Processor")
         self.setObjectName("Nozzle Filament Validator Post-Processor")
 
-        try:
-            self.json_path = settings["data_path"] if settings["data_path"] is not None else None
-        except KeyError:
-            self.json_path = None
+        self.json_data: dict = load_json_data()
 
-        self.json_data = load_json_data(self.json_path)
+        self.gcode_path = None
 
         try:
             self.octoprint_url = settings["octoprint_url"] if settings["octoprint_url"] is not None else None
         except KeyError:
             self.octoprint_url = None
 
-        self.pick_path_button = QPushButton("Select data file")
+        self.pick_path_button = QPushButton("Select Gcode file")
         self.save_button = QPushButton("Save data")
-        self.file_path_layout = QLabel("File path: ")
-        self.continue_print = QPushButton("Save and Export")
+        self.file_path_layout = QLabel("Gcode file path: ")
+        self.continue_print = QPushButton("Export")
         self.file_dialog = QFileDialog(self, "Select the data json file", filter="*.json")
         self.octoprint_url_label = QLabel("Octoprint url: ")
         self.octoprint_url_field = QLineEdit(self.octoprint_url)
@@ -67,6 +64,7 @@ class stand_alone_window(QMainWindow):
         self.load_current_spool_button = QPushButton("load current spools")
         self.num_of_extruders_label = QLabel("Number of extruders in gcode: ")
         self.octoprint_error = QLabel("")
+        self.edit_gcode_button = QPushButton("Edit Gcode")
 
         # setup the elements
         self.setup_elements()
@@ -106,12 +104,15 @@ class stand_alone_window(QMainWindow):
         self.pick_path_button.clicked.connect(self.pick_file_button_click)
         # self.file_dialog.fileSelected.connect(self.handle_file_selected)
         self.load_current_spool_button.clicked.connect(self.load_current_spools)
+        self.edit_gcode_button.clicked.connect(self.edit_gcode)
         if MODE == modes.POST_PROCESSOR:
             self.num_of_extruders_label.setText(f"Number of extruders in gcode:"
                                                 f" {get_num_extruders_from_gcode(sys.argv[1])}")
-            self.layout.addWidget(self.num_of_extruders_label)
-        if self.get_json_path() is not None:
-            self.file_path_layout.setText(f"File path: {self.get_json_path()}")
+        if MODE == modes.STAND_ALONE:
+            self.file_path_layout.setText(
+                f"Gcode file path: {self.get_gcode_path() if self.get_gcode_path() else 'No file selected'}")
+        else:
+            self.file_path_layout.setText(f"Post-processing the slicer file")
 
     def setup_layout(self) -> None:
         """
@@ -121,39 +122,55 @@ class stand_alone_window(QMainWindow):
         set_global_stretch_factor(self.layout, 0)
         self.data_box.setSpacing(5)
         self.layout.addWidget(self.file_path_layout)
-        self.layout.addWidget(self.pick_path_button)
-
-        if MODE == modes.POST_PROCESSOR:
-            self.layout.addWidget(self.continue_print)
+        if MODE == modes.STAND_ALONE:
+            self.layout.addWidget(self.pick_path_button)
+            self.layout.addWidget(self.edit_gcode_button)
         else:
-            self.layout.addWidget(self.save_button)
+            self.layout.addWidget(self.continue_print)
 
         self.layout.addWidget(self.octoprint_url_label)
         self.layout.addWidget(self.octoprint_url_field)
         self.layout.addWidget(self.octoprint_url_button)
         self.layout.addWidget(self.load_current_spool_button)
         self.layout.addWidget(self.octoprint_error)
+        if MODE == modes.POST_PROCESSOR:
+            self.layout.addWidget(self.num_of_extruders_label)
         self.layout.addLayout(self.data_box)
+        self.layout.addWidget(self.save_button)
 
     def continue_print_click(self) -> None:
         """
         Save the data and close the window
         only used when in post-processor mode
         """
-        if self.json_path is None:
-            self.octoprint_error.setText("No file selected")
-            return
         if self.json_data is None:
-            self.octoprint_error.setText("No data to save")
+            self.octoprint_error.setText("No data to export")
             return
-        if not save_data_file(self.json_path, self.json_data):
-            self.octoprint_error.setText(
-                "Could not save the data")
-            return
+        self.save_data()
         self.octoprint_error.setText("")
-        save_settings(self.settings)
+        self.save_data()
         postprocessor.main(sys.argv[1], json_data=postprocessor.parse_json_data(self.json_data))
         self.close()
+
+    def edit_gcode(self) -> None:
+        """
+        Open the gcode file in the default text editor
+        """
+        self.save_data()
+        if self.get_gcode_path() is not None:
+            postprocessor.main(self.get_gcode_path(), json_data=postprocessor.parse_json_data(self.json_data))
+        else:
+            self.octoprint_error.setText("No gcode file selected")
+            Thread(target=self.clear_error, args=(5,)).start()
+
+    def clear_error(self, delay: int) -> None:
+        """
+        Clear the error text after a specified delay.
+        This function is meant to be run in a separate thread
+        :param delay: the delay in seconds before clearing the text
+        """
+        time.sleep(delay)
+        self.octoprint_error.setText("")
 
     def load_current_spools(self) -> None:
         """
@@ -168,6 +185,14 @@ class stand_alone_window(QMainWindow):
             self.json_data[str(i + 1)] = {"sm_name": spool}
 
         self.update_display_data(self.json_data)
+
+    def get_gcode_path(self) -> str | None:
+        """
+        Get the path to the gcode file
+        :return: the path to the gcode file or None if the file is not set
+        """
+
+        return self.gcode_path
 
     def save_octoprint_url(self) -> None:
         """
@@ -280,6 +305,11 @@ class stand_alone_window(QMainWindow):
         # Update the display
         self.update_display_data(self.json_data)
 
+    def save_data(self):
+        self.read_current_spools()
+        self.settings["spool_data"] = self.json_data
+        save_settings(self.settings)
+
     def save_button_click(self) -> None:
         """
         save button click event handler
@@ -287,21 +317,15 @@ class stand_alone_window(QMainWindow):
         :return:
         """
         self.read_current_spools()
-        if self.get_json_path() is None:
-            self.save_button.setText("No file selected")
-            Thread(target=self.clear_save_button, args=(10,)).start()
-            return
-        if self.json_data is None:
+        if self.json_data is None or self.json_data == {}:
             self.save_button.setText("No data to save")
             Thread(target=self.clear_save_button, args=(10,)).start()
             return
-        if not save_data_file(self.get_json_path(), self.json_data):
-            self.save_button.setText("Could not save the data, invalid file (is the file the settings file?)\nPick a "
-                                     "different file and try again")
-            delay = 5
         else:
+            self.save_data()
             self.save_button.setText("Data saved successfully")
             delay = 2
+
         Thread(target=self.clear_save_button, args=(delay,)).start()
 
     def clear_save_button(self, delay: int) -> None:
@@ -317,33 +341,34 @@ class stand_alone_window(QMainWindow):
         """
         Open a file dialog to select the json file
         """
-        file_name, _ = QFileDialog.getSaveFileName(self, "Select the data json file", "", "JSON Files (*.json)")
+        file_name, _ = QFileDialog.getOpenFileName(self, "Select the data json file", "", "Gcode Files (*.gcode)")
 
         if file_name:
             _, ext = os.path.splitext(file_name)
             # If not, add .json
             if not ext:
-                file_name += '.json'
-            self.json_path = file_name
-            self.save_json_data()
-            self.file_path_layout.setText(f"File path: {self.get_json_path()}")
-            self.json_data = load_json_data(self.get_json_path())
-            self.update_display_data(self.json_data)
+                file_name += '.gcode'
+            self.gcode_path = file_name
+            self.file_path_layout.setText(
+                f"Gcode file path: {self.get_gcode_path() if self.get_gcode_path() else 'No file selected'}")
+            self.get_spools_from_gcode()
 
-    def get_json_path(self) -> str | None:
+    def get_spools_from_gcode(self):
         """
-        Get the path to the json file
-        :return: the path to the json file or None if the file is not set
+        Get the spools from the gcode file and update the json data
         """
-
-        return self.json_path
-
-    def save_json_data(self) -> None:
-        """
-        Save the json data to the json file
-        """
-        self.settings["data_path"] = self.json_path
-        save_settings(self.settings)
+        spools = get_spools_from_gcode(self.get_gcode_path())
+        if spools is None or spools == {}:
+            self.octoprint_error.setText("Could not load the spools, file may not have been sliced correctly")
+            Thread(target=self.clear_error, args=(5,)).start()
+            self.gcode_path = None
+            self.file_path_layout.setText(f"Gcode file path: "
+                                          f"{self.get_gcode_path() if self.get_gcode_path() else 'No file selected'}")
+            return
+        self.json_data = {}
+        for i, spool in spools.items():
+            self.json_data[str(i)] = {"sm_name": spool}
+        self.update_display_data(self.json_data)
 
 
 def set_global_stretch_factor(layout: QVBoxLayout, stretch_factor: int) -> None:
@@ -369,17 +394,18 @@ def main() -> None:
     window = stand_alone_window(settings)
     window.show()
     app.exec()
-    if window.json_path is not None:
-        # save the file and return the data
-        save_data_file(window.json_path, window.json_data)
+    window.save_data()
+    save_settings(window.settings)
 
 
-def load_json_data(path: str | None) -> dict[str, None]:
+def load_json_data() -> dict[str, None]:
     """
     Load the data from the json file
     :param path: the path to the json file
     :return: the data or an empty dictionary if the file does not exist
     """
+    path = SETTINGS_PATH
+
     if path is None:
         return {}
     if os.path.isdir(path):
@@ -388,47 +414,14 @@ def load_json_data(path: str | None) -> dict[str, None]:
         return {}
     with open(path, 'r') as file:
         try:
-            data = json.load(file)
-            try:
-                if data["settings version"] is not None:
-                    return {}
-            except KeyError:
-                pass
+            data = json.load(file)["spool_data"]
             return data
         except json.JSONDecodeError:
             return {}
         except FileNotFoundError:
             return {}
-
-
-def save_data_file(path: str, data: dict[str, None]) -> bool:
-    """
-    Save the data to the json file
-    :param path: the path to the json file
-    :param data: the data to save
-    :return: true if the data was saved, false otherwise
-    """
-
-    if path is None:
-        return False
-    elif os.path.isdir(path):
-        return False
-    if data is None:
-        return False
-    try:
-        with open(path, 'r') as file:
-            current_data = json.load(file)
-        if current_data["settings version"] is not None:
-            return False
-    except FileNotFoundError:
-        pass
-    except KeyError:
-        pass
-    except json.JSONDecodeError:
-        pass
-    with open(path, 'w') as file:
-        json.dump(data, file)
-    return True
+        except KeyError:
+            return {}
 
 
 def save_settings(json_data: dict[str, None]) -> None:
@@ -461,9 +454,9 @@ def check_octoprint_settings(url: str) -> bool | str:
     :return: True if the settings are correct, the error message otherwise
     """
     try:
-        api_path = ("/plugin/SpoolManager/loadSpoolsByQuery?selectedPageSize=100000&from=0&to=100000&sortColumn"
-                    "=displayName&sortOrder=desc&filterName=&materialFilter=all&vendorFilter=all&colorFilter=all")
-        response = requests.get(url=url + api_path)
+        path_1 = "/plugin/SpoolManager/loadSpoolsByQuery?selectedPageSize=100000&from=0&to=100000&sortColumn"
+        path_2 = "=displayName&sortOrder=desc&filterName=&materialFilter=all&vendorFilter=all&colorFilter=all"
+        response = requests.get(url=url + path_1 + path_2)
         if response.status_code != 200:
             return f"Could not connect to the octoprint server: \"{response.status_code}\""
     except requests.exceptions.ConnectionError as e:
@@ -480,10 +473,10 @@ def get_loaded_spools(url: str) -> list[str] | None:
     """
     # get the spools from the database
     # return the spools
-    api_path = ("/plugin/SpoolManager/loadSpoolsByQuery?selectedPageSize=100000&from=0&to=100000&sortColumn"
-                "=displayName&sortOrder=desc&filterName=&materialFilter=all&vendorFilter=all&colorFilter=all")
+    path_numbero_uno = "/plugin/SpoolManager/loadSpoolsByQuery?selectedPageSize=100000&from=0&to=100000&sortColumn"
+    path_numbero_dos = "=displayName&sortOrder=desc&filterName=&materialFilter=all&vendorFilter=all&colorFilter=all"
     try:
-        data = requests.get(url=url + api_path)
+        data = requests.get(url=url + path_numbero_uno + path_numbero_dos)
         if data.status_code != 200:
             return None
         json_data = data.json()
@@ -531,6 +524,32 @@ def get_num_extruders_from_gcode(gcode_path) -> int:
         if re.search(r"\[\s*sm_name\s*=\s*([^]]*\S)?\s*]", filament_notes[i]):
             count += 1
     return count
+
+
+def get_spools_from_gcode(gcode_path) -> dict[int, str]:
+    """
+    Get the number of extruders from the gcode file
+    :param gcode_path: the path to the gcode file
+    :return: the number of extruders
+    """
+    spools = {}
+    gcode = postprocessor.parse_gcode(gcode_path)
+    filament_notes_pattern = re.compile(r'; filament_notes = (.+)')
+    filament_notes_match = filament_notes_pattern.search(gcode)
+    filament_notes = None
+    if filament_notes_match:
+        filament_notes = filament_notes_match.group(1).strip().split(';')
+    if filament_notes is None:
+        return {}
+    if filament_notes == ['""'] or filament_notes == ['']:
+        return {}
+    # loop through the json data
+    for i in range(len(filament_notes)):
+        if re.search(r"\[\s*sm_name\s*=\s*([^]]*\S)?\s*]", filament_notes[i]):
+            spools[i + 1] = (re.search(r"\[\s*sm_name\s*=\s*([^]]*\S)?\s*]", filament_notes[i]).group(1))
+        else:
+            spools[i + 1] = ""
+    return spools
 
 
 if __name__ == "__main__":
