@@ -1,6 +1,5 @@
 #!/bin/sh
 
-touch data.json
 touch nfvsettings.json
 
 ln -s "$(pwd)"/nvfPostprocessor nvfPostprocessor.app/Contents/MacOS/nvfPostprocessor

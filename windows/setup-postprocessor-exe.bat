@@ -1,5 +1,4 @@
 @echo off
-IF NOT EXIST data.json echo. > data.json
 IF NOT EXIST nfvsettings.json echo. > nfvsettings.json
 
 cscript //nologo create_shortcut.vbs "%cd%\nvfPostprocessor.exe"

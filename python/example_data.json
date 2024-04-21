@@ -1,1 +1,15 @@
-{"1": {"sm_name": "Blue PLA"}, "2": {"sm_name": "grey pla (spool 2)"}, "3": {"sm_name": "Purpelish PETG (spool3)"}}
+{
+  "octoprint_url": "your-octoprint-url",
+  "settings version": 1,
+  "spool_data": {
+    "1": {
+      "sm_name": "Purple PLA"
+    },
+    "2": {
+      "sm_name": "Blue PLA"
+    },
+    "3": {
+      "sm_name": "Black PETG"
+    }
+  }
+}

@@ -12,8 +12,7 @@ if "%python_installed%"=="true" (
     python -m pip install --upgrade -r requirements.txt
     )
 
-echo. > data.json
-nfvsettings.json
+IF NOT EXIST nfvsettings.json echo. > nfvsettings.json
 
 echo Postprocessor setup complete.
 echo.
