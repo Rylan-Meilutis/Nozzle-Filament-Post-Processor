@@ -341,7 +341,8 @@ class stand_alone_window(QMainWindow):
         """
         Open a file dialog to select the json file
         """
-        file_name, _ = QFileDialog.getOpenFileName(self, "Select the data json file", "", "Gcode Files (*.gcode)")
+        home_dir = os.path.expanduser('~')
+        file_name, _ = QFileDialog.getOpenFileName(self, "Select the data json file", home_dir, "Gcode Files (*.gcode)")
 
         if file_name:
             _, ext = os.path.splitext(file_name)
