@@ -8,6 +8,10 @@ profile for each spool of filament you have, but still want to use the spool che
 ## Usage
 
 ### Windows
+
+### You may need to whitelist the exe in your antivirus software, as it is not signed and because I use pyinstaller to create the exe, it may be flagged as a false positive.
+#### if you are paranoid about running the exe, you can either build it from source (instructions coming soon) or use the python script.
+
 Download the postprocessor.zip file found in the release.
 Unzip the folder and double click the <code>setup-postprocessor-exe.bat</code> file if you are going to run use the provided exe or 
 <code>setup-postprocessor-python.bat</code> if you plan on running the python code.
