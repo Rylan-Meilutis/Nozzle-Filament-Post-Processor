@@ -119,8 +119,8 @@ def replace_names(gcode: str, json_data: list[Any]) -> str:
                 continue
         except IndexError:
             continue
-        if re.search(r"\[\s*sm_name\s*=\s*([^]]*\S)]", filament_notes[i]):
-            tmp_string = re.sub(r"\[\s*sm_name\s*=\s*([^]]*\S)]", f"[sm_name = {json_data[i]}]", filament_notes[i])
+        if re.search(r"\[\s*sm_name\s*=\s*([^]]*\S)?\s*]", filament_notes[i]):
+            tmp_string = re.sub(r"\[\s*sm_name\s*=\s*([^]]*\S)?\s*]", f"[sm_name = {json_data[i]}]", filament_notes[i])
             # replace the match with the json data
             new_filament_notes = new_filament_notes.replace(filament_notes[i], tmp_string)
 

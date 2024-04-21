@@ -6,8 +6,8 @@ if ! which python >/dev/null 2>&1; then
     exit 1
 fi
 
-touch data.json
 touch nfvsettings.json
+
 echo "Postprocessor setup complete."
 echo
 echo "enter the following in your slicers post processor section:"
