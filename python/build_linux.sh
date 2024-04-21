@@ -5,7 +5,7 @@ source venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install --upgrade -r requirements.txt
 
-venv/bin/pyinstaller --noconfirm --onefile --noconsole --name "nvfPostprocessor" "nvfPostprocessor.py" -i="icon.png" --add-data "icon.png:."
+venv/bin/pyinstaller --noconfirm --clean --onefile --noconsole --name "nvfPostprocessor" "nvfPostprocessor.py" -i="icon.png" --add-data "icon.png:." --version-file=version.ini
 
 rm -rf build
 
