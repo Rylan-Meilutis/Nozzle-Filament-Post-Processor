@@ -12,6 +12,7 @@ python -m pip install --upgrade pip
 python -m pip install --upgrade -r requirements.txt
 python version_file.py
 
+REM Build pyinstaller from source to reduce false positives from antivirus software
 pip uninstall -y pyinstaller
 git clone https://github.com/pyinstaller/pyinstaller
 cd pyinstaller
