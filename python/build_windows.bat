@@ -18,7 +18,7 @@ cd pyinstaller/bootloader
 python ./waf --gcc distclean all
 cd ..
 python setup.py install
-
+cd ..
 rmdir /s /q pyinstaller
 
 REM Build the application
