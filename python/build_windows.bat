@@ -14,10 +14,15 @@ python version_file.py
 
 pip uninstall -y pyinstaller
 git clone https://github.com/pyinstaller/pyinstaller
-cd pyinstaller/bootloader
+cd pyinstaller
+git fetch --tags
+for /f "delims=" %%i in ('git tag --sort=-creatordate') do set LATEST_TAG=%%i && goto :done
+:done
+git checkout %LATEST_TAG%
+cd bootloader
 python ./waf --gcc distclean all
 cd ..
-python setup.py install
+pip install .
 cd ..
 rmdir /s /q pyinstaller
 
