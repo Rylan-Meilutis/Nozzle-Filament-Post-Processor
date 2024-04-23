@@ -19,6 +19,8 @@ python ./waf --gcc distclean all
 cd ..
 python setup.py install
 
+rmdir /s /q pyinstaller
+
 REM Build the application
 venv\Scripts\pyinstaller --noconfirm --clean --onefile --noconsole --name "nvfPostprocessor" "nvfPostprocessor.py" -i="icon.png" --add-data "icon.png;." --version-file=version.ini
 
