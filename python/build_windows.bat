@@ -12,6 +12,13 @@ python -m pip install --upgrade pip
 python -m pip install --upgrade -r requirements.txt
 python version_file.py
 
+pip uninstall -y pyinstaller
+git clone https://github.com/pyinstaller/pyinstaller
+cd pyinstaller/bootloader
+python ./waf --gcc distclean all
+cd ..
+python setup.py install
+
 REM Build the application
 venv\Scripts\pyinstaller --noconfirm --clean --onefile --noconsole --name "nvfPostprocessor" "nvfPostprocessor.py" -i="icon.png" --add-data "icon.png;." --version-file=version.ini
 
