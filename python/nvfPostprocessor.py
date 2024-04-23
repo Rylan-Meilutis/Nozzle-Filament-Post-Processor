@@ -146,7 +146,6 @@ class stand_alone_window(QMainWindow):
         if self.json_data is None:
             self.octoprint_error.setText("No data to export")
             return
-        self.save_data()
         self.octoprint_error.setText("")
         self.save_data()
         postprocessor.main(sys.argv[1], json_data=postprocessor.parse_json_data(self.json_data))
@@ -308,7 +307,6 @@ class stand_alone_window(QMainWindow):
     def save_data(self):
         self.read_current_spools()
         self.settings["spool_data"] = self.json_data
-        save_settings(self.settings)
 
     def save_button_click(self) -> None:
         """
@@ -323,6 +321,7 @@ class stand_alone_window(QMainWindow):
             return
         else:
             self.save_data()
+            save_settings(self.settings)
             self.save_button.setText("Data saved successfully")
             delay = 2
 
@@ -363,9 +362,11 @@ class stand_alone_window(QMainWindow):
             self.octoprint_error.setText("Could not load the spools, file may not have been sliced correctly")
             Thread(target=self.clear_error, args=(5,)).start()
             self.gcode_path = None
-            self.file_path_layout.setText(f"Gcode file path: "
-                                          f"{self.get_gcode_path() if self.get_gcode_path() else 'No file selected'}")
+            self.json_data = load_json_data()
+            self.update_display_data(self.json_data)
             return
+        self.file_path_layout.setText(f"Gcode file path: "
+                                      f"{self.get_gcode_path() if self.get_gcode_path() else 'No file selected'}")
         self.json_data = {}
         for i, spool in spools.items():
             self.json_data[str(i)] = {"sm_name": spool}
@@ -395,7 +396,6 @@ def main() -> None:
     window = stand_alone_window(settings)
     window.show()
     app.exec()
-    window.save_data()
     save_settings(window.settings)
 
 

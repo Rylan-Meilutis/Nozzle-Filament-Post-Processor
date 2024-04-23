@@ -9,7 +9,7 @@ profile for each spool of filament you have, but still want to use the spool che
 
 ### Windows
 
-### You may need to whitelist the exe in your antivirus software, as it is not signed and because I use pyinstaller to create the exe, it may be flagged as a false positive.
+### You may need to whitelist the exe in your antivirus software, because I use pyinstaller to create the exe, it may be flagged as a false positive.
 #### if you are paranoid about running the exe, you can either build it from source (instructions coming soon) or use the python script.
 
 Download the postprocessor.zip file found in the release.
@@ -51,3 +51,8 @@ From now on, use the output command to  edit the spool settings (editing the spo
 
 When exporting the gcode, a window will pop up asking you to confirm the current settings. 
 If you are happy with the settings, click ok, otherwise edit the spools until they are correct.
+
+## Building from source
+On windows the best way to build the exe is to install python3 and chocolatey, then install the mingw package.
+For mac and linux, you will need to make sure you have python3 installed. 
+Now simply run the build script for your platform and it will create the exe for you.
