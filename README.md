@@ -5,6 +5,17 @@ available for Windows and MacOS and (Linux have a version pf python3 installed b
 The post-processor is used to easily add the necessary spool data into the gcode if you don't want to have a different 
 profile for each spool of filament you have, but still want to use the spool checking feature available in the plugin.
 
+## Slicer Config
+
+Using this requires the slicer to be set up correctly.
+The post-processor will look for the following settings in the notes section of the filament profile in the gcode
+<code>[sm_name=]</code> if this is not present the post-processor will not let you edit the gcode and if in post-processor mode,
+will simply export the gcode as is.
+(Note: you cannot have brackets [] in the name of your filament.)
+
+Image of the settings in Prusa slicer:
+![Filament notes](readme_assets/filament_notes_config.png)
+
 ## Usage
 
 ### Windows
