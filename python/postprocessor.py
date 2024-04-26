@@ -26,6 +26,10 @@ def main(gcode_path: str, json_path: Union[str, None] = None, json_data: Union[l
     # replace the last 1000 lines of the gcode with the new data
     with open(gcode_path, 'r') as file:
         data = file.readlines()
+
+    if not data[0].startswith("; Edited with NVF Postprocessor"):
+        data.insert(0, '; Edited with NVF Postprocessor\n')
+
     with open(gcode_path, 'w') as file:
         for line in data[:-1000]:
             file.write(line)
