@@ -158,8 +158,10 @@ class stand_alone_window(QMainWindow):
         self.save_data()
         if self.get_gcode_path() is not None:
             postprocessor.main(self.get_gcode_path(), json_data=postprocessor.parse_json_data(self.json_data))
+            self.octoprint_error.setText("Gcode updated successfully")
+            Thread(target=self.clear_error, args=(5,)).start()
         else:
-            self.octoprint_error.setText("No gcode file selected")
+            self.octoprint_error.setText("No Gcode file selected")
             Thread(target=self.clear_error, args=(5,)).start()
 
     def clear_error(self, delay: int) -> None:
@@ -557,6 +559,30 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         MODE = modes.POST_PROCESSOR
     app = QApplication([])
+    app.setStyleSheet("""
+        QMainWindow {
+            background-color: #333233;
+        }
+        QPushButton {
+            background-color: #01274f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+        }
+        QPushButton:hover {
+            background-color: #01172e;
+        }
+        QLineEdit {
+            background-color: #333233;
+            border: 1px solid #FFFFFF;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        QLabel {
+            color: #333;
+        }
+        """)
     app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/icon.png"))
     QApplication.setApplicationName("Nozzle Filament Validator Post-Processor")
     QApplication.setApplicationDisplayName("Nozzle Filament Validator Post-Processor")
