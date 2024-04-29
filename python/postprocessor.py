@@ -141,7 +141,6 @@ def replace_names(gcode: str, json_data: list[Any]) -> str:
 
             gcode = re.sub(r"; filament used \[mm] = (.+)", f"; filament used [mm] = {', '.join(filament_used)}", gcode)
 
-
     # loop through the json data
     for i in range(len(filament_notes)):
         try:
