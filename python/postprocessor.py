@@ -108,14 +108,40 @@ def replace_names(gcode: str, json_data: list[Any]) -> str:
         return gcode
     # match the regex
     filament_notes_pattern = re.compile(r'; filament_notes = (.+)')
+    filament_pattern = re.compile(r'; filament_type = (.+)')
+    used_filament_pattern = re.compile(r'; filament used \[mm] = (.+)')
+
     filament_notes_match = filament_notes_pattern.search(gcode)
+    filament_match = filament_pattern.search(gcode)
+    filament_used_match = used_filament_pattern.search(gcode)
+
     filament_notes = None
+    filament_types = None
+    filament_used = None
+
+    if filament_used_match:
+        filament_used = filament_used_match.group(1).strip().split(',')
+
+    if filament_match:
+        filament_types = filament_match.group(1).strip().split(';')
     if filament_notes_match:
         filament_notes = filament_notes_match.group(1).strip().split(';')
     if filament_notes is None:
         return gcode
 
+    num_filaments = 0
+    if filament_types is not None:
+        num_filaments = len(filament_types)
     new_filament_notes = filament_notes_match.group(0)
+    if filament_used is not None:
+        if len(filament_used) != num_filaments:
+            while len(filament_used) < num_filaments:
+                filament_used.append('0')
+            filament_used = [value.strip() for value in filament_used]
+
+            gcode = re.sub(r"; filament used \[mm] = (.+)", f"; filament used [mm] = {', '.join(filament_used)}", gcode)
+
+
     # loop through the json data
     for i in range(len(filament_notes)):
         try:
