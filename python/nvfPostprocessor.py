@@ -574,10 +574,11 @@ if __name__ == "__main__":
             background-color: #333233;
             border: 1px solid #FFFFFF;
             border-radius: 5px;
+            color: #FFF;
             padding: 5px;
         }
         QLabel {
-            color: #333;
+            color: #FFF;
         }
         """)
     app.setWindowIcon(QIcon(os.path.dirname(__file__) + "/icon.png"))
