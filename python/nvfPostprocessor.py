@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import sys
@@ -8,9 +9,10 @@ import time
 from threading import Thread
 
 import requests
+from PyQt6.QtCore import Qt, QTimer, QSize
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFileDialog,
-                             QHBoxLayout, QLineEdit)
+                             QHBoxLayout, QLineEdit, QWIDGETSIZE_MAX)
 
 import postprocessor
 
@@ -26,7 +28,6 @@ SETTINGS_PATH = os.path.dirname(__file__) + "/nvfsettings.json"
 if getattr(sys, 'frozen', False):
     SETTINGS_PATH = os.path.dirname(sys.executable) + "/nvfsettings.json"
 
-MAX_HEIGHT = 200
 MAX_WIDTH = 800
 
 
@@ -36,10 +37,10 @@ class main_app(QMainWindow):
 
         # Init variables
         self.settings = settings
-        self.setMaximumSize(MAX_WIDTH, MAX_HEIGHT)
         self.adjustSize()
         self.setWindowTitle("Nozzle Filament Validator Post-Processor")
         self.setObjectName("Nozzle Filament Validator Post-Processor")
+        self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
 
         self.json_data: dict = load_json_data()
 
@@ -68,6 +69,7 @@ class main_app(QMainWindow):
 
         # create layout elements
         self.layout = QVBoxLayout()
+        self.widget = QVBoxLayout()
         self.data_box = QVBoxLayout()
 
         # setup the layout
@@ -78,7 +80,7 @@ class main_app(QMainWindow):
 
         # create a container for the layout
         container = QWidget()
-        container.setLayout(self.layout)
+        container.setLayout(self.widget)
 
         # set the central widget
         self.setCentralWidget(container)
@@ -132,8 +134,16 @@ class main_app(QMainWindow):
         self.layout.addWidget(self.octoprint_error)
         if MODE == modes.POST_PROCESSOR:
             self.layout.addWidget(self.num_of_extruders_label)
-        self.layout.addLayout(self.data_box)
-        self.layout.addWidget(self.save_button)
+
+        data_boxes = QWidget()
+        data_boxes.setLayout(self.layout)
+        data_boxes.setFixedHeight(275)
+        bottom_buttons = QVBoxLayout()
+        self.widget.addWidget(data_boxes)
+        self.widget.addLayout(self.data_box)
+        self.widget.setSpacing(15)
+        bottom_buttons.addWidget(self.save_button)
+        self.widget.addLayout(bottom_buttons)
 
     def continue_print_click(self) -> None:
         """
@@ -234,7 +244,7 @@ class main_app(QMainWindow):
                 # Remove widget from data_box
                 self.data_box.removeWidget(widget)
                 # Delete widget
-                widget.deleteLater()
+                widget.destroy()
 
     def update_display_data(self, json_data: dict[str, dict[str, str]] | dict[str, None]) -> None:
         """
@@ -260,13 +270,29 @@ class main_app(QMainWindow):
             extruder_widget.setLayout(extruder_layout)
             extruder_widget.setStyleSheet("border: 1px solid black;")
             # Add the QWidget to the data_box layout
+            extruder_widget.setFixedHeight(54)
             self.data_box.addWidget(extruder_widget)
         # Create a QPushButton for adding a new extruder and add it to the layout
         add_button = QPushButton("Add")
         add_button.clicked.connect(self.add_extruder)
         self.data_box.addWidget(add_button)
+        self.setMinimumSize(MAX_WIDTH, 0)
+        if self.centralWidget():
+            self.centralWidget().update()
         self.adjustSize()
+        if self.centralWidget():
+            self.centralWidget().update()
+
         self.setFixedWidth(MAX_WIDTH)
+        # Use a QTimer to delay the call to self.size()
+        QTimer.singleShot(0, self.lock_size)
+
+
+    def lock_size(self):
+        """
+        function to lock the size of the widget
+        """
+        self.setFixedSize(self.size())
 
     def remove_extruder(self, key: str) -> None:
         """
@@ -291,6 +317,7 @@ class main_app(QMainWindow):
         # Replace the old json_data with the new one
         self.json_data = new_json_data
         # Update the display
+        self.widget.setSpacing(0)
         self.update_display_data(self.json_data)
 
     def add_extruder(self) -> None:
@@ -301,6 +328,7 @@ class main_app(QMainWindow):
         # Add a new extruder to json_data
         self.json_data[str(len(self.json_data) + 1)] = {"sm_name": ""}
         # Update the display
+        self.widget.setSpacing(15)
         self.update_display_data(self.json_data)
 
     def save_data(self):
