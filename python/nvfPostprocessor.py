@@ -15,9 +15,6 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVB
 import postprocessor
 
 
-# the following code is an example of how the app's structure could look like, feel free to change it as you see fit
-
-
 class modes:
     STAND_ALONE = "stand-alone"
     POST_PROCESSOR = "post-processor"
@@ -33,7 +30,7 @@ MAX_HEIGHT = 200
 MAX_WIDTH = 800
 
 
-class stand_alone_window(QMainWindow):
+class main_app(QMainWindow):
     def __init__(self, settings: dict[str, None]):
         super().__init__()
 
@@ -395,7 +392,7 @@ def main() -> None:
     # show interface to edit the json data and add/remove extruders
     settings = load_settings()
     # the app
-    window = stand_alone_window(settings)
+    window = main_app(settings)
     window.show()
     app.exec()
     save_settings(window.settings)
