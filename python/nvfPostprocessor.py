@@ -287,7 +287,6 @@ class main_app(QMainWindow):
         # Use a QTimer to delay the call to self.size()
         QTimer.singleShot(0, self.lock_size)
 
-
     def lock_size(self):
         """
         function to lock the size of the widget
@@ -304,20 +303,6 @@ class main_app(QMainWindow):
             return
         # Remove the extruder from json_data
         del self.json_data[key]
-        # Create a new dictionary to hold the updated json_data
-        new_json_data = {}
-        # Iterate over the original json_data
-        for old_key, value in self.json_data.items():
-            # If the old key is less than the key to be removed, keep it the same
-            if int(old_key) < int(key):
-                new_json_data[old_key] = value
-            # If the old key is greater than or equal to the key to be removed, decrement it by 1
-            else:
-                new_json_data[str(int(old_key) - 1)] = value
-        # Replace the old json_data with the new one
-        self.json_data = new_json_data
-        # Update the display
-        self.widget.setSpacing(0)
         self.update_display_data(self.json_data)
 
     def add_extruder(self) -> None:
