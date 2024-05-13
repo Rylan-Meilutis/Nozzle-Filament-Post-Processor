@@ -133,6 +133,7 @@ def replace_names(gcode: str, json_data: list[Any]) -> str:
     if filament_types is not None:
         num_filaments = len(filament_types)
     new_filament_notes = filament_notes_match.group(0)
+    new_filament_notes = new_filament_notes[1:].split(';')
     if filament_used is not None:
         if len(filament_used) != num_filaments:
             while len(filament_used) < num_filaments:
@@ -151,8 +152,9 @@ def replace_names(gcode: str, json_data: list[Any]) -> str:
         if re.search(r"\[\s*sm_name\s*=\s*([^]]*\S)?\s*]", filament_notes[i]):
             tmp_string = re.sub(r"\[\s*sm_name\s*=\s*([^]]*\S)?\s*]", f"[sm_name = {json_data[i]}]", filament_notes[i])
             # replace the match with the json data
-            new_filament_notes = new_filament_notes.replace(filament_notes[i], tmp_string)
-
+            new_filament_notes[i] = new_filament_notes[i].replace(filament_notes[i], tmp_string)
+    #convert the list to a string replacing the commas with a semicolon and not adding the brackets
+    new_filament_notes = ";" + '; '.join(new_filament_notes)
     # replace the filament notes in the gcode
     gcode = gcode.replace(filament_notes_match.group(0), new_filament_notes)
     return gcode
