@@ -5,6 +5,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 from typing import Any, Union
 
 
@@ -23,17 +24,8 @@ def main(gcode_path: str, json_path: Union[str, None] = None, json_data: Union[l
 
     gcode = parse_gcode(gcode_path)
     new_file = replace_names(gcode, json_data)
-    # replace the last 1000 lines of the gcode with the new data
-    with open(gcode_path, 'r') as file:
-        data = file.readlines()
 
-    if not data[0].startswith("; Edited with NVF Postprocessor"):
-        data.insert(0, '; Edited with NVF Postprocessor\n')
-
-    with open(gcode_path, 'w') as file:
-        for line in data[:-1000]:
-            file.write(line)
-        file.write(new_file)
+    replace_gcode_tail(gcode_path, new_file)
 
 
 def parse_json_file(json_path: str) -> list[str | None]:
@@ -70,30 +62,71 @@ def parse_gcode(gcode_path: str) -> str:
     :param gcode_path: path to the gcode file
     :return: the last 1000 lines of the gcode file
     """
-    # Number of lines to read from the end of the file
-    num_lines = 1000
+    tail, _ = read_gcode_tail(gcode_path, 1000)
+    return tail.decode('utf-8', errors='replace')
 
-    with open(gcode_path, 'r') as file:
-        # Move the file pointer to the end
+
+def read_gcode_tail(gcode_path: str, num_lines: int) -> tuple[bytes, int]:
+    """
+    Read the last num_lines lines from a G-code file without loading the full file.
+    :param gcode_path: path to the G-code file
+    :param num_lines: number of trailing lines to read
+    :return: the tail bytes and the byte offset where the tail starts
+    """
+    chunk_size = 8192
+
+    with open(gcode_path, 'rb') as file:
         file.seek(0, os.SEEK_END)
-        file_size = file.tell()
-        # Track the position in the file
-        pos = file_size - 1
+        pos = file.tell()
+        chunks = []
         newline_count = 0
-        # Read the file backwards until we find the last 100 lines or reach the beginning of the file
-        while pos > 0 and newline_count < num_lines:
-            file.seek(pos)
-            char = file.read(1)
-            if char == '\n':
-                newline_count += 1
-                if newline_count == num_lines:
-                    break
-            pos -= 1
-        # Read the last 100 lines
-        lines = file.readlines()
 
-        # Extract nozzle diameter and filament alert_type from the collected lines
-        return ''.join(lines)
+        while pos > 0 and newline_count <= num_lines:
+            read_size = min(chunk_size, pos)
+            pos -= read_size
+            file.seek(pos)
+            chunk = file.read(read_size)
+            chunks.append(chunk)
+            newline_count += chunk.count(b'\n')
+
+    tail = b''.join(reversed(chunks))
+    lines = tail.splitlines(keepends=True)
+    tail_lines = lines[-num_lines:]
+    tail_bytes = b''.join(tail_lines)
+    tail_start = pos + len(tail) - len(tail_bytes)
+    return tail_bytes, tail_start
+
+
+def replace_gcode_tail(gcode_path: str, new_tail: str) -> None:
+    """
+    Replace the last 1000 lines of a G-code file without loading the full file.
+    :param gcode_path: path to the G-code file
+    :param new_tail: replacement text for the trailing slicer settings
+    """
+    _, tail_start = read_gcode_tail(gcode_path, 1000)
+    directory = os.path.dirname(gcode_path) or '.'
+
+    with open(gcode_path, 'rb') as source:
+        first_line = source.readline()
+        has_header = first_line.startswith(b'; Edited with NVF Postprocessor')
+        source.seek(0)
+
+        with tempfile.NamedTemporaryFile('wb', delete=False, dir=directory) as temp_file:
+            temp_path = temp_file.name
+            if not has_header:
+                temp_file.write(b'; Edited with NVF Postprocessor\n')
+
+            remaining = tail_start
+            while remaining > 0:
+                chunk = source.read(min(8192, remaining))
+                if not chunk:
+                    break
+                temp_file.write(chunk)
+                remaining -= len(chunk)
+
+            temp_file.write(new_tail.encode('utf-8'))
+
+    os.replace(temp_path, gcode_path)
 
 
 def replace_names(gcode: str, json_data: list[Any]) -> str:
