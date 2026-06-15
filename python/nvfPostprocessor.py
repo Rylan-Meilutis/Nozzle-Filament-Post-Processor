@@ -7,6 +7,7 @@ import re
 import sys
 import time
 from threading import Thread
+from urllib.parse import urljoin
 
 import requests
 from PyQt6.QtCore import Qt, QTimer, QSize
@@ -24,9 +25,15 @@ class modes:
 
 MODE = modes.STAND_ALONE
 
-SETTINGS_PATH = os.path.dirname(__file__) + "/nvfsettings.json"
+SETTINGS_FILENAME = "nfvsettings.json"
+LEGACY_SETTINGS_FILENAME = "nvfsettings.json"
+
+SETTINGS_DIR = os.path.dirname(__file__)
 if getattr(sys, 'frozen', False):
-    SETTINGS_PATH = os.path.dirname(sys.executable) + "/nvfsettings.json"
+    SETTINGS_DIR = os.path.dirname(sys.executable)
+
+SETTINGS_PATH = os.path.join(SETTINGS_DIR, SETTINGS_FILENAME)
+LEGACY_SETTINGS_PATH = os.path.join(SETTINGS_DIR, LEGACY_SETTINGS_FILENAME)
 
 MAX_WIDTH = 800
 
@@ -50,6 +57,10 @@ class main_app(QMainWindow):
             self.octoprint_url = settings["octoprint_url"] if settings["octoprint_url"] is not None else None
         except KeyError:
             self.octoprint_url = None
+        try:
+            self.octoprint_api_key = settings["octoprint_api_key"] if settings["octoprint_api_key"] is not None else None
+        except KeyError:
+            self.octoprint_api_key = None
 
         self.pick_path_button = QPushButton("Select Gcode file")
         self.save_button = QPushButton("Save data")
@@ -58,7 +69,9 @@ class main_app(QMainWindow):
         self.file_dialog = QFileDialog(self, "Select the data json file", filter="*.json")
         self.octoprint_url_label = QLabel("Octoprint url: ")
         self.octoprint_url_field = QLineEdit(self.octoprint_url)
-        self.octoprint_url_button = QPushButton("Save octoprint url")
+        self.octoprint_api_key_label = QLabel("Octoprint API key: ")
+        self.octoprint_api_key_field = QLineEdit(self.octoprint_api_key)
+        self.octoprint_url_button = QPushButton("Save Octoprint settings")
         self.load_current_spool_button = QPushButton("load current spools")
         self.num_of_extruders_label = QLabel("Number of extruders in gcode: ")
         self.octoprint_error = QLabel("")
@@ -92,6 +105,11 @@ class main_app(QMainWindow):
         self.octoprint_url_field.setPlaceholderText("Enter the octoprint url here")
         self.octoprint_url_field.setMaximumHeight(25)
         self.octoprint_url_field.setMaximumWidth(MAX_WIDTH)
+
+        self.octoprint_api_key_field.setPlaceholderText("Enter the Octoprint API key here")
+        self.octoprint_api_key_field.setMaximumHeight(25)
+        self.octoprint_api_key_field.setMaximumWidth(MAX_WIDTH)
+        self.octoprint_api_key_field.setEchoMode(QLineEdit.EchoMode.Password)
 
         self.octoprint_error.setWordWrap(True)
         self.octoprint_error.setMaximumWidth(MAX_WIDTH)
@@ -129,6 +147,8 @@ class main_app(QMainWindow):
 
         self.layout.addWidget(self.octoprint_url_label)
         self.layout.addWidget(self.octoprint_url_field)
+        self.layout.addWidget(self.octoprint_api_key_label)
+        self.layout.addWidget(self.octoprint_api_key_field)
         self.layout.addWidget(self.octoprint_url_button)
         self.layout.addWidget(self.load_current_spool_button)
         self.layout.addWidget(self.octoprint_error)
@@ -137,7 +157,7 @@ class main_app(QMainWindow):
 
         data_boxes = QWidget()
         data_boxes.setLayout(self.layout)
-        data_boxes.setFixedHeight(275)
+        data_boxes.setFixedHeight(375)
         bottom_buttons = QVBoxLayout()
         self.widget.addWidget(data_boxes)
         self.widget.addLayout(self.data_box)
@@ -184,9 +204,11 @@ class main_app(QMainWindow):
         """
         Load the current spools from octoprint and store them in the json_data dictionary
         """
-        spools = get_loaded_spools(self.octoprint_url)
+        url = self.octoprint_url_field.text() or self.octoprint_url
+        api_key = self.octoprint_api_key_field.text() or self.octoprint_api_key
+        spools, error = get_loaded_spools(url, api_key)
         if spools is None:
-            self.octoprint_error.setText("Could not load the spools")
+            self.octoprint_error.setText(error)
             return
         # if the spool is none add an empty string to the json_data
         for i, spool in enumerate(spools):
@@ -207,13 +229,17 @@ class main_app(QMainWindow):
         Save the octoprint url to the settings
         """
         url = self.octoprint_url_field.text()
-        if check_octoprint_settings(url) is not True:
-            self.octoprint_error.setText(check_octoprint_settings(url))
+        api_key = self.octoprint_api_key_field.text()
+        octoprint_check = check_octoprint_settings(url, api_key)
+        if octoprint_check is not True:
+            self.octoprint_error.setText(octoprint_check)
         else:
             self.settings["octoprint_url"] = url
+            self.settings["octoprint_api_key"] = api_key
             save_settings(self.settings)
-            self.octoprint_error.setText("Octoprint url saved successfully")
+            self.octoprint_error.setText("Octoprint settings saved successfully")
             self.octoprint_url = url
+            self.octoprint_api_key = api_key
 
     def read_current_spools(self) -> None:
         """
@@ -417,24 +443,11 @@ def load_json_data() -> dict[str, None]:
     :param path: the path to the json file
     :return: the data or an empty dictionary if the file does not exist
     """
-    path = SETTINGS_PATH
-
-    if path is None:
+    settings = load_settings()
+    try:
+        return settings["spool_data"]
+    except KeyError:
         return {}
-    if os.path.isdir(path):
-        return {}
-    if not os.path.exists(path):
-        return {}
-    with open(path, 'r') as file:
-        try:
-            data = json.load(file)["spool_data"]
-            return data
-        except json.JSONDecodeError:
-            return {}
-        except FileNotFoundError:
-            return {}
-        except KeyError:
-            return {}
 
 
 def save_settings(json_data: dict[str, None]) -> None:
@@ -454,58 +467,87 @@ def load_settings() -> dict[str, None]:
     Load the settings from the json file
     :return: the json data or an empty dictionary if the file does not exist
     """
-    try:
-        return json.load(open(SETTINGS_PATH, 'r'))
-    except FileNotFoundError:
-        return {}
+    for path in (SETTINGS_PATH, LEGACY_SETTINGS_PATH):
+        if os.path.isdir(path) or not os.path.exists(path):
+            continue
+        try:
+            with open(path, 'r') as file:
+                return json.load(file)
+        except (json.JSONDecodeError, FileNotFoundError):
+            continue
+    return {}
 
 
-def check_octoprint_settings(url: str) -> bool | str:
+def check_octoprint_settings(url: str, api_key: str = None) -> bool | str:
     """
     Check the octoprint settings
     :param url: the base octoprint url
     :return: True if the settings are correct, the error message otherwise
     """
-    try:
-        path_1 = "/plugin/SpoolManager/loadSpoolsByQuery?selectedPageSize=100000&from=0&to=100000&sortColumn"
-        path_2 = "=displayName&sortOrder=desc&filterName=&materialFilter=all&vendorFilter=all&colorFilter=all"
-        response = requests.get(url=url + path_1 + path_2)
-        if response.status_code != 200:
-            return f"Could not connect to the octoprint server: \"{response.status_code}\""
-    except requests.exceptions.ConnectionError as e:
-        return f"Could not connect to the octoprint server: \"{e}\""
+    spools, error = get_loaded_spools(url, api_key)
+    if spools is None:
+        return error
 
     return True
 
 
-def get_loaded_spools(url: str) -> list[str] | None:
+def get_spool_manager_response(url: str, api_key: str = None) -> tuple[dict | None, str | None]:
+    if url is None or url.strip() == "":
+        return None, "No OctoPrint URL saved"
+
+    request_url = urljoin(url.rstrip("/") + "/", "plugin/SpoolManager/loadSpoolsByQuery")
+    headers = {}
+    if api_key is not None and api_key.strip() != "":
+        headers["X-Api-Key"] = api_key.strip()
+    params = {
+        "selectedPageSize": 100000,
+        "from": 0,
+        "to": 100000,
+        "sortColumn": "displayName",
+        "sortOrder": "desc",
+        "filterName": "",
+        "materialFilter": "all",
+        "vendorFilter": "all",
+        "colorFilter": "all",
+    }
+
+    try:
+        response = requests.get(url=request_url, params=params, headers=headers, timeout=10)
+    except requests.exceptions.RequestException as e:
+        return None, f"Could not connect to OctoPrint: {e}"
+
+    if response.status_code in (401, 403):
+        return None, f"Could not load the spools from OctoPrint: HTTP {response.status_code}. Check the OctoPrint API key."
+
+    if response.status_code != 200:
+        return None, f"Could not load the spools from OctoPrint: HTTP {response.status_code}"
+
+    try:
+        return response.json(), None
+    except ValueError:
+        return None, "Could not load the spools from OctoPrint: response was not valid JSON"
+
+
+def get_loaded_spools(url: str, api_key: str = None) -> tuple[list[str] | None, str | None]:
     """
     Get the loaded spools from octoprint
     :param url: the base octoprint url
-    :return: a list of the loaded spools name or None if there was an error
+    :return: a list of the loaded spools names and None, or None and an error message if there was an error
     """
-    # get the spools from the database
-    # return the spools
-    path_numbero_uno = "/plugin/SpoolManager/loadSpoolsByQuery?selectedPageSize=100000&from=0&to=100000&sortColumn"
-    path_numbero_dos = "=displayName&sortOrder=desc&filterName=&materialFilter=all&vendorFilter=all&colorFilter=all"
-    try:
-        data = requests.get(url=url + path_numbero_uno + path_numbero_dos)
-        if data.status_code != 200:
-            return None
-        json_data = data.json()
-    except requests.exceptions.ConnectionError:
-        return None
-    except json.JSONDecodeError:
-        return None
-    except TypeError:
-        return None
-    # remove all except loaded spools
-    json_data = json_data["selectedSpools"]
+    json_data, error = get_spool_manager_response(url, api_key)
+    if json_data is None:
+        return None, error
+
+    selected_spools = json_data.get("selectedSpools")
+    if not isinstance(selected_spools, list):
+        response_keys = ", ".join(json_data.keys())
+        return None, f"Could not load the spools from OctoPrint: missing selectedSpools in response ({response_keys})"
+
     # create a list where each element is the name of a spool, the spools are in order of the extruders in the json
     # response
     spool_data = []
 
-    for spool in json_data:
+    for spool in selected_spools:
         try:
             spool_data += [spool["displayName"]]
         except KeyError:
@@ -513,7 +555,7 @@ def get_loaded_spools(url: str) -> list[str] | None:
         except TypeError:
             spool_data += [""]
     # the app
-    return spool_data
+    return spool_data, None
 
 
 def get_num_extruders_from_gcode(gcode_path) -> int:

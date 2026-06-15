@@ -1,5 +1,6 @@
 {
   "octoprint_url": "your-octoprint-url",
+  "octoprint_api_key": "your-octoprint-api-key",
   "settings version": 1,
   "spool_data": {
     "1": {
