@@ -126,15 +126,24 @@ dmypy.json
 .DS_Store
 
 nvfsettings.json
+nfvsettings.json
 
 settings.json
 
 data.json
 
-.idea/workspace.xml
+.idea/
 
-python/Octoprint_NVF.pfx
+implementations/python/Octoprint_NVF.pfx
 
 MacOS.zip
 
 Windows.zip
+
+*.exe
+macos/nvfPostprocessor
+windows/nvfPostprocessor.exe
+
+
+# Rust build output
+implementations/rust/target/

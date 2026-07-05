@@ -64,6 +64,25 @@ When exporting the gcode, a window will pop up asking you to confirm the current
 If you are happy with the settings, click ok, otherwise edit the spools until they are correct.
 
 ## Building from source
-On windows the best way to build the exe is to install python3 and chocolatey, then install the mingw package.
-For mac and linux, you will need to make sure you have python3 installed. 
-Now simply run the build script for your platform and it will create the exe for you.
+The original Python implementation lives in `implementations/python`.
+The Rust implementation lives in `implementations/rust`.
+
+To build and install the Rust app, install Rust from <https://rustup.rs/> and run:
+
+```sh
+python3 implementations/rust/setup.py
+```
+
+The Rust setup script builds a release binary and installs it for the current platform:
+
+- Linux: installs the binary in `~/.local/bin`, creates a `.desktop` file, and prints the slicer post-processor command.
+- macOS: creates an app bundle in `/Applications` when writable, otherwise `~/Applications`, and prints the slicer post-processor command.
+- Windows: installs the exe and support files under `%LOCALAPPDATA%` and prints the slicer post-processor command.
+
+To build without installing, run:
+
+```sh
+python3 implementations/rust/setup.py --build-only
+```
+
+To build the legacy Python app, run the platform build script in `implementations/python`.

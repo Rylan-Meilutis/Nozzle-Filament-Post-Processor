@@ -1,0 +1,5 @@
+requests
+pyqt6
+pillow
+pyinstaller
+pyinstaller_versionfile
