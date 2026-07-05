@@ -5,6 +5,17 @@ available for Windows and MacOS and (Linux have a version pf python3 installed b
 The post-processor is used to easily add the necessary spool data into the gcode if you don't want to have a different 
 profile for each spool of filament you have, but still want to use the spool checking feature available in the plugin.
 
+## Slicer Config
+
+Using this requires the slicer to be set up correctly.
+The post-processor will look for the following settings in the notes section of the filament profile in the gcode
+<code>[sm_name=]</code> if this is not present the post-processor will not let you edit the gcode and if in post-processor mode,
+will simply export the gcode as is.
+(Note: you cannot have brackets [] in the name of your filament.)
+
+Image of the settings in Prusa slicer:
+![Filament notes](readme_assets/filament_notes_config.png)
+
 ## Usage
 
 ### Windows
@@ -53,6 +64,25 @@ When exporting the gcode, a window will pop up asking you to confirm the current
 If you are happy with the settings, click ok, otherwise edit the spools until they are correct.
 
 ## Building from source
-On windows the best way to build the exe is to install python3 and chocolatey, then install the mingw package.
-For mac and linux, you will need to make sure you have python3 installed. 
-Now simply run the build script for your platform and it will create the exe for you.
+The original Python implementation lives in `implementations/python`.
+The Rust implementation lives in `implementations/rust`.
+
+To build and install the Rust app, install Rust from <https://rustup.rs/> and run:
+
+```sh
+python3 implementations/rust/setup.py
+```
+
+The Rust setup script builds a release binary and installs it for the current platform:
+
+- Linux: installs the binary in `~/.local/bin`, creates a `.desktop` file, and prints the slicer post-processor command.
+- macOS: creates an app bundle in `/Applications` when writable, otherwise `~/Applications`, and prints the slicer post-processor command.
+- Windows: installs the exe and support files under `%LOCALAPPDATA%` and prints the slicer post-processor command.
+
+To build without installing, run:
+
+```sh
+python3 implementations/rust/setup.py --build-only
+```
+
+To build the legacy Python app, run the platform build script in `implementations/python`.
